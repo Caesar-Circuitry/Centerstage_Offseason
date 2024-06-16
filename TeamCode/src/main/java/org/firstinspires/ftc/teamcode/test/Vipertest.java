@@ -8,37 +8,47 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp
 @Config
 public class Vipertest extends LinearOpMode {
     Motor.Encoder liftLeftEncoder, liftRightEncoder;
     DcMotorEx liftMotorLeft, liftMotorRight;
+    Servo boxRot;
     PIDFController LeftLiftController;
     PIDFController RightLiftController;
     public static double LP = .03, LI = 0, LD = 0, LF = 0, RP = .03, RI = 0, RD = 0, RF = 0;
+    public static boolean board = false;
     Motor.ZeroPowerBehavior ZERO_POWER_BEHAVIOR = Motor.ZeroPowerBehavior.BRAKE;
-    double liftLeftTargetPos_ticks = 0, liftRightTargetPos_ticks = 0, LIFT_LEFT_TICKS_PER_IN = 113.285714, LIFT_Right_TICKS_PER_IN = 113.8 , LeftLiftPower = 0, RightLiftPower = 0, liftLeftLastPos_ticks = 0,liftRightLastPos_ticks = 0, prevLeftLiftPower = 0, prevRightLiftPower;
+    double liftLeftTargetPos_ticks = 0, liftRightTargetPos_ticks = 0, LIFT_LEFT_TICKS_PER_IN = 111.05263, LIFT_Right_TICKS_PER_IN = 113.47368 , LeftLiftPower = 0, RightLiftPower = 0, liftLeftLastPos_ticks = 0,liftRightLastPos_ticks = 0, prevLeftLiftPower = 0, prevRightLiftPower;
     public static double heightIN = 0;
 
     @Override
     public void runOpMode() throws InterruptedException {
         LeftLiftController = new PIDFController(LP, LI, LD, LF);
         RightLiftController = new PIDFController(RP,RI,RD,RF);
-        liftLeftEncoder = new Motor(hardwareMap,"leftLiftMotor", Motor.GoBILDA.RPM_312).encoder;
-        liftRightEncoder = new Motor(hardwareMap, "rightLiftMotor", Motor.GoBILDA.RPM_312).encoder;
+        liftLeftEncoder = new Motor(hardwareMap,"leftViper", Motor.GoBILDA.RPM_312).encoder;
+        liftRightEncoder = new Motor(hardwareMap, "rightViper", Motor.GoBILDA.RPM_312).encoder;
 
-        liftMotorLeft = hardwareMap.get(DcMotorEx.class, "leftLiftMotor");
+        boxRot = hardwareMap.get(Servo.class,"boxRotate");
+
+        liftMotorLeft = hardwareMap.get(DcMotorEx.class, "leftViper");
         liftMotorLeft.setZeroPowerBehavior(ZERO_POWER_BEHAVIOR.getBehavior());
         liftMotorLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         liftMotorLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        liftMotorRight = hardwareMap.get(DcMotorEx.class, "rightLiftMotor");
+        liftMotorRight = hardwareMap.get(DcMotorEx.class, "rightViper");
         liftMotorRight.setZeroPowerBehavior(ZERO_POWER_BEHAVIOR.getBehavior());
         liftMotorRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             waitForStart();
             while (opModeIsActive()){
                     liftRunToPosition(heightIN, 1);
+                    if(board){
+                        boxRot.setPosition(.95);
+                    } else if (!board) {
+                        boxRot.setPosition(.5);
+                    }
             }
     }
     public void liftRunToPosition(double pos_in, double speed_0to1) {
