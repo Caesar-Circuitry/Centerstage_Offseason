@@ -3,9 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.function.Consumer;
 import org.firstinspires.ftc.robotcore.external.function.Continuation;
@@ -20,13 +17,10 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
-
 
 import java.util.concurrent.atomic.AtomicReference;
 
-@Config
+//Code by team #19448 XBots
 public class NewBlueRightProcessor implements VisionProcessor, CameraStreamSource {
 
     // you can delete this
