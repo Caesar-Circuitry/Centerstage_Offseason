@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.controller.PIDFController;
+import com.arcrobotics.ftclib.controller.wpilibcontroller.SimpleMotorFeedforward;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -11,6 +13,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp
@@ -39,10 +42,12 @@ public class RRteleOpField extends LinearOpMode {
         hangDown
     }
     private ViperPos viperPos = ViperPos.ZERO;
-    
+    private double KP = 7, KI = 0, KD = 0; // heading Pid
+    private PIDController headingPID;
     MecanumDrive drive;
     @Override
     public void runOpMode() throws InterruptedException {
+        headingPID = new PIDController(KP,KI,KD);
         drive = new MecanumDrive(hardwareMap, new Pose2d(0,0,0));
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
@@ -157,15 +162,18 @@ public class RRteleOpField extends LinearOpMode {
         }
     }
     public void drive(){
-        drive.setDrivePowers(new PoseVelocity2d(
-                new Vector2d(
-                        (-gamepad1.left_stick_x * Math.sin(-Math.toRadians(drive.pose.heading.log())) - -gamepad1.left_stick_y * Math.cos(-Math.toRadians(drive.pose.heading.log()))),//x * Math.sin(-botHeading) + y * Math.cos(-botHeading)
+        double botHeading = Math.toRadians(drive.pose.heading.log());
+        double targetHeading = Math.toRadians(drive.pose.heading.log() + gamepad1.right_stick_x * 10); // adjust the multiplier as needed
 
-                        ((-gamepad1.left_stick_x * Math.cos(-Math.toRadians(drive.pose.heading.log())) - -gamepad1.left_stick_y * Math.sin(-Math.toRadians(drive.pose.heading.log())))* 1.1) //x * Math.cos(-botHeading) - y * Math.sin(-botHeading); * 1.1
-                ),
-                -gamepad1.right_stick_x
-        ));
+        double x = gamepad1.left_stick_x * Math.cos(botHeading) - gamepad1.left_stick_y * Math.sin(botHeading);
+        double y = gamepad1.left_stick_x * Math.sin(botHeading) + gamepad1.left_stick_y * Math.cos(botHeading);
+
+        double headingError = Math.toRadians(wrapAngle(Math.toDegrees(targetHeading - botHeading)));
+        double headingCorrection = headingPID.calculate(headingError);
+
+        drive.setDrivePowers(new PoseVelocity2d(new Vector2d(x, y), headingCorrection));
     }
+
     public void liftRunToPosition(double speed_0to1) {
         liftLeftTargetPos_ticks = pos_in * LIFT_LEFT_TICKS_PER_IN;
         liftRightTargetPos_ticks = pos_in * LIFT_Right_TICKS_PER_IN;
@@ -190,5 +198,8 @@ public class RRteleOpField extends LinearOpMode {
 
         prevLeftLiftPower = LeftLiftPower;
         prevRightLiftPower = RightLiftPower;
+    }
+    private double wrapAngle(double angle) {
+        return (angle + 180) % 360 - 180;
     }
 }
