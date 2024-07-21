@@ -170,8 +170,7 @@ public class RRteleOpField extends LinearOpMode {
 
         double headingError = Math.toRadians(wrapAngle(Math.toDegrees(targetHeading - botHeading)));
         double headingCorrection = headingPID.calculate(headingError);
-
-        drive.setDrivePowers(new PoseVelocity2d(new Vector2d(x, y), headingCorrection));
+            drive.setDrivePowers(new PoseVelocity2d(new Vector2d(x, y), headingCorrection));
     }
 
     public void liftRunToPosition(double speed_0to1) {

@@ -31,9 +31,9 @@ public class RRteleOp extends LinearOpMode {
     private double liftLeftTargetPos_ticks = 0, liftRightTargetPos_ticks = 0, LIFT_LEFT_TICKS_PER_IN = 113.285714 ,
     LIFT_Right_TICKS_PER_IN = 113.8 , LeftLiftPower = 0, RightLiftPower = 0, liftLeftLastPos_ticks = 0,liftRightLastPos_ticks = 0,
     prevLeftLiftPower = 0, prevRightLiftPower = 0;
-
-    private double lvl0 = 0, lvl1 = 13, lvl2 = 16, lvl3 = 24, hangUp = 19, hangDown = 5, thresholdUp = 12;
-    private boolean bPressed = false;
+    private boolean dpadUp = false, dpadDown = false;
+    private double pos_in =0;
+    private double lvl0 = 0, lvlYellow = 11, lvl1 = 13, lvl2 = 16, lvl3 = 24, hangUp = 19, hangDown = 5, thresholdUp = 10 , deviateVal = 1.5;
     private enum ViperPos{
         ZERO,
         ONE,
@@ -78,40 +78,62 @@ public class RRteleOp extends LinearOpMode {
         while (opModeIsActive()){
             drive();
             if(gamepad1.b){
+                pos_in = lvl0;
                 viperPos = ViperPos.ZERO;
             } else if (gamepad1.a) {
+                pos_in = lvl1;
                 boxClip.setPosition(BoxClipClosed);
                 viperPos = ViperPos.ONE;
             } else if (gamepad1.x) {
+                pos_in = lvl2;
                 boxClip.setPosition(BoxClipClosed);
                 viperPos = ViperPos.TWO;
             } else if (gamepad1.y) {
+                pos_in = lvl3;
                 boxClip.setPosition(BoxClipClosed);
                 viperPos = ViperPos.Three;
             } else if (gamepad2.a) {
+                pos_in = hangUp;
                 viperPos = ViperPos.hangUp;
             } else if (gamepad2.b) {
+                pos_in = hangDown;
                 viperPos = ViperPos.hangDown;
+            }
+            if(gamepad1.dpad_up && gamepad1.dpad_up != dpadUp){
+                if(pos_in + deviateVal <= lvl3) {
+                    pos_in += deviateVal;
+                }
+                dpadUp = true;
+            } else{
+                dpadUp = false;
+            }if (gamepad1.dpad_down && gamepad1.dpad_down != dpadDown) {
+                if (pos_in - deviateVal >= lvlYellow) {
+                    pos_in -= deviateVal;
+                }
+                dpadDown = true;
+            }else{
+                dpadDown = false;
             }
             switch (viperPos){
                 case ZERO:
-                    liftRunToPosition(lvl0,1);
+                    liftRunToPosition(1);
                     boxRot.setPosition(BoxRotateHome);
                     break;
                 case ONE:
-                    liftRunToPosition(lvl1,1);
+                    liftRunToPosition(1);
                     break;
                 case TWO:
-                    liftRunToPosition(lvl2, 1);
+                    liftRunToPosition(1);
                     break;
                 case Three:
-                    liftRunToPosition(lvl3, 1);
+                    liftRunToPosition(1);
                     break;
                 case hangUp:
-                    liftRunToPosition(hangUp,1);
+                    liftRunToPosition(1);
                     break;
                 case hangDown:
-                    liftRunToPosition(hangDown, 1);
+                    liftRunToPosition(1);
+                    break;
             }
             if(liftLeftEncoder.getPosition()> thresholdUp * LIFT_LEFT_TICKS_PER_IN){
                 boxRot.setPosition(BoxRotateBoard);
@@ -147,7 +169,7 @@ public class RRteleOp extends LinearOpMode {
                 -gamepad1.right_stick_x
         ));
     }
-    public void liftRunToPosition(double pos_in, double speed_0to1) {
+    public void liftRunToPosition(double speed_0to1) {
         liftLeftTargetPos_ticks = pos_in * LIFT_LEFT_TICKS_PER_IN;
         liftRightTargetPos_ticks = pos_in * LIFT_Right_TICKS_PER_IN;
 
